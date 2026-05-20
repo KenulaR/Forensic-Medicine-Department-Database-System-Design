@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ report.report_no }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="print-body">
+<main class="report-page">
+    <header class="report-header">
+        <div>
+            <small>Forensic Medicine Department</small>
+            <h1>{{ report.report_type }} Report</h1>
+        </div>
+        <strong>{{ report.report_no }}</strong>
+    </header>
+
+    <section class="report-section">
+        <h2>Case Information</h2>
+        <dl class="details columns">
+            <dt>Case No</dt><dd>{{ report.case_no }}</dd>
+            <dt>Case Type</dt><dd>{{ report.case_category }} / {{ report.case_type }}</dd>
+            <dt>Patient</dt><dd>{{ report.patient_no }} - {{ report.patient_name }}</dd>
+            <dt>Gender / Age</dt><dd>{{ report.gender }} / {{ report.age or '-' }}</dd>
+            <dt>Incident</dt><dd>{{ report.incident_date or '-' }} at {{ report.incident_location or '-' }}</dd>
+            <dt>Police station</dt><dd>{{ report.police_station or '-' }}</dd>
+        </dl>
+    </section>
+
+    {% if clinical %}
+    <section class="report-section">
+        <h2>Clinical Examination</h2>
+        <p><strong>MLEF:</strong> {{ clinical.mlef_no }} / <strong>Examined:</strong> {{ clinical.examined_at or '-' }}</p>
+        <p class="preline">{{ clinical.findings or '-' }}</p>
+        <p class="preline">{{ clinical.investigation_findings or '' }}</p>
+    </section>
+    {% endif %}
+
+    {% if postmortem %}
+    <section class="report-section">
+        <h2>Postmortem</h2>
+        <p><strong>PMR:</strong> {{ postmortem.pmr_no }} / <strong>Death type:</strong> {{ postmortem.death_type }}</p>
+        <p class="preline">{{ postmortem.external_findings or '' }}</p>
+        <p class="preline">{{ postmortem.internal_findings or '' }}</p>
+        <p><strong>Cause of death:</strong> {{ postmortem.cause_of_death or 'Pending' }}</p>
+    </section>
+    {% endif %}
+
+    {% if evidence %}
+    <section class="report-section">
+        <h2>Evidence and Samples</h2>
+        <table>
+            <thead><tr><th>Code</th><th>Type</th><th>Status</th><th>Storage</th></tr></thead>
+            <tbody>
+            {% for item in evidence %}
+                <tr><td>{{ item.evidence_code }}</td><td>{{ item.evidence_type }}</td><td>{{ item.lab_status }}</td><td>{{ item.storage_location or '-' }}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    {% endif %}
+
+    <section class="report-section">
+        <h2>Report Summary</h2>
+        <p class="preline">{{ report.summary or '-' }}</p>
+    </section>
+
+    <footer class="signature-block">
+        <div>
+            <small>Prepared by</small>
+            <strong>{{ report.prepared_by or '-' }}</strong>
+        </div>
+        <div>
+            <small>Digital signature</small>
+            <strong>{{ report.digital_signature or 'Pending' }}</strong>
+        </div>
+        <div>
+            <small>Status</small>
+            <strong>{{ report.status }}</strong>
+        </div>
+    </footer>
+
+    <div class="print-actions">
+        <button class="button primary" onclick="window.print()">Print</button>
+        {% if has_role('admin', 'doctor', 'clerk') %}
+            <a class="button ghost" href="{{ url_for('module_edit', module_key='reports', item_id=report.id) }}">Edit</a>
+        {% endif %}
+        <a class="button ghost" href="{{ url_for('module_list', module_key='reports') }}">Back</a>
+    </div>
+</main>
+</body>
+</html>

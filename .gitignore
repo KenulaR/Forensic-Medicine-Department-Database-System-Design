@@ -1,0 +1,9 @@
+__pycache__/
+.pytest_cache/
+.tools/
+logs/
+*.pyc
+forensic.db
+data/*.db
+backups/*.db
+backups/*.sql

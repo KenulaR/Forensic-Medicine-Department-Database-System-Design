@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block title %}Backup | Forensic DB{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Recovery</p>
+        <h1>Database Backup</h1>
+    </div>
+    <form method="post">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="action" value="create">
+        <button class="button primary" type="submit">Create backup</button>
+    </form>
+</div>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Backup File</th><th>Created</th><th>Size</th><th class="actions-cell">Actions</th></tr></thead>
+            <tbody>
+            {% for item in backups %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.modified }}</td>
+                    <td>{{ item.size_kb }} KB</td>
+                    <td class="actions-cell">
+                        <div class="table-actions">
+                            <a class="button small" href="{{ url_for('backup_download', filename=item.name) }}">Download</a>
+                            <form method="post" data-confirm="Restore this backup? The current database will be copied first.">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="action" value="restore">
+                                <input type="hidden" name="filename" value="{{ item.name }}">
+                                <button class="button small danger" type="submit">Restore</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4" class="empty">No backups yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+{% block title %}{{ config.label }} | Forensic DB{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Records</p>
+        <h1>{{ config.label }}</h1>
+    </div>
+    {% if can_write %}
+        <a class="button primary" href="{{ url_for('module_new', module_key=module_key) }}">New {{ config.singular }}</a>
+    {% endif %}
+</div>
+
+<form class="filter-row" method="get">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search {{ config.label|lower }}">
+    <button class="button" type="submit">Search</button>
+    {% if q %}<a class="button ghost" href="{{ url_for('module_list', module_key=module_key) }}">Clear</a>{% endif %}
+</form>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    {% for column in columns %}<th>{{ column }}</th>{% endfor %}
+                    <th class="actions-cell">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in rows %}
+                <tr>
+                    {% for column in columns %}
+                        <td>{{ row[column] if row[column] is not none else '-' }}</td>
+                    {% endfor %}
+                    <td class="actions-cell">
+                        <div class="table-actions">
+                            {% if config.detail_endpoint == 'case_detail' %}
+                                <a class="button small" href="{{ url_for('case_detail', case_id=row.id) }}">Open</a>
+                            {% elif config.detail_endpoint == 'evidence_detail' %}
+                                <a class="button small" href="{{ url_for('evidence_detail', evidence_id=row.id) }}">Open</a>
+                            {% elif config.detail_endpoint == 'report_print' %}
+                                <a class="button small" href="{{ url_for('report_print', report_id=row.id) }}">Print</a>
+                            {% endif %}
+                            {% if can_write %}
+                                <a class="button small ghost" href="{{ url_for('module_edit', module_key=module_key, item_id=row.id) }}">Edit</a>
+                                <form action="{{ url_for('module_delete', module_key=module_key, item_id=row.id) }}" method="post" data-confirm="Delete this record?">
+                                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                    <button class="button small danger" type="submit">Delete</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="{{ columns|length + 1 }}" class="empty">No records found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

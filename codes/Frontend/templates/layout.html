@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Forensic Medicine Department{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="{% if not current_user() %}auth-page{% endif %}">
+{% if current_user() %}
+    <aside class="sidebar">
+        <a class="brand" href="{{ url_for('dashboard') }}">
+            <span class="brand-mark">FM</span>
+            <span>
+                <strong>Forensic DB</strong>
+                <small>Medicine Department</small>
+            </span>
+        </a>
+        <nav class="nav">
+            <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">Dashboard</a>
+            {% for group, items in nav_groups() %}
+                <p class="nav-group">{{ group }}</p>
+                {% for item in items %}
+                    <a class="nav-link {% if request.path == item.url %}active{% endif %}" href="{{ item.url }}">{{ item.label }}</a>
+                {% endfor %}
+            {% endfor %}
+            <p class="nav-group">Tools</p>
+            <a class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">Reports & Analytics</a>
+            <a class="nav-link {% if request.endpoint == 'global_search' %}active{% endif %}" href="{{ url_for('global_search') }}">Search</a>
+            {% if has_role('admin') %}
+                <a class="nav-link {% if request.endpoint == 'users_list' %}active{% endif %}" href="{{ url_for('users_list') }}">Users</a>
+                <a class="nav-link {% if request.endpoint == 'backup' %}active{% endif %}" href="{{ url_for('backup') }}">Backup</a>
+            {% endif %}
+        </nav>
+    </aside>
+    <main class="shell">
+        <header class="topbar">
+            <form class="top-search" action="{{ url_for('global_search') }}" method="get">
+                <input type="search" name="q" value="{{ request.args.get('q', '') }}" placeholder="Search case, patient, evidence, report">
+                <button type="submit" class="icon-button" title="Search" aria-label="Search">Go</button>
+            </form>
+            <div class="user-chip">
+                <span>{{ current_user().username }}</span>
+                <small>{{ current_user().role }}</small>
+            </div>
+            <form action="{{ url_for('logout') }}" method="post">
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                <button class="button ghost" type="submit">Sign out</button>
+            </form>
+        </header>
+        <section class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-stack">
+                        {% for category, message in messages %}
+                            <div class="flash {{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </section>
+    </main>
+{% else %}
+    {% block auth_content %}{% endblock %}
+{% endif %}
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

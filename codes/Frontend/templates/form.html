@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block title %}{{ title }} | Forensic DB{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Data Entry</p>
+        <h1>{{ title }}</h1>
+    </div>
+    <a class="button ghost" href="{{ cancel_url }}">Cancel</a>
+</div>
+
+<form class="panel form-grid" method="post">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    {% for field in fields %}
+        {% set value = values.get(field.name) %}
+        <label class="{% if field.type == 'textarea' %}wide{% endif %}">
+            <span>{{ field.label }}{% if field.required %} <b>*</b>{% endif %}</span>
+            {% if field.type == 'textarea' %}
+                <textarea name="{{ field.name }}" rows="5">{{ value or '' }}</textarea>
+            {% elif field.type == 'select' %}
+                <select name="{{ field.name }}" {% if field.required %}required{% endif %}>
+                    {% for option_value, option_label in field.options %}
+                        <option value="{{ option_value }}" {% if (value|string) == (option_value|string) %}selected{% endif %}>{{ option_label }}</option>
+                    {% endfor %}
+                </select>
+            {% elif field.type == 'checkbox' %}
+                <span class="check-row">
+                    <input type="checkbox" name="{{ field.name }}" value="1" {% if value %}checked{% endif %}>
+                    Enabled
+                </span>
+            {% else %}
+                <input
+                    name="{{ field.name }}"
+                    type="{{ field.type or 'text' }}"
+                    value="{% if field.type == 'datetime-local' and value %}{{ value|string|replace(' ', 'T') }}{% elif field.type != 'password' %}{{ value or '' }}{% endif %}"
+                    {% if field.required %}required{% endif %}>
+            {% endif %}
+        </label>
+    {% endfor %}
+    <div class="form-actions wide">
+        <button class="button primary" type="submit">Save</button>
+        <a class="button ghost" href="{{ cancel_url }}">Cancel</a>
+    </div>
+</form>
+{% endblock %}

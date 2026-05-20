@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+{% block title %}Reports & Analytics | Forensic DB{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="eyebrow">SQL Reports</p>
+        <h1>Reports & Analytics</h1>
+    </div>
+    <div class="head-actions">
+        <a class="button ghost" href="{{ url_for('analytics_export', report_name='daily') }}">Daily CSV</a>
+        <a class="button ghost" href="{{ url_for('analytics_export', report_name='monthly') }}">Monthly CSV</a>
+        <a class="button ghost" href="{{ url_for('analytics_export', report_name='pending') }}">Pending CSV</a>
+    </div>
+</div>
+
+<section class="split-grid">
+    <article class="panel">
+        <div class="panel-head"><h2>Daily Case Report</h2></div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Date</th><th>Category</th><th>Total</th></tr></thead>
+                <tbody>
+                {% for row in daily %}
+                    <tr><td>{{ row.case_date }}</td><td>{{ row.case_category }}</td><td>{{ row.total_cases }}</td></tr>
+                {% else %}
+                    <tr><td colspan="3" class="empty">No data.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+    <article class="panel">
+        <div class="panel-head"><h2>Pending Reports</h2></div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Report</th><th>Case</th><th>Type</th><th>Status</th><th>Due</th></tr></thead>
+                <tbody>
+                {% for row in pending %}
+                    <tr>
+                        <td><a href="{{ url_for('report_print', report_id=row.id) }}">{{ row.report_no }}</a></td>
+                        <td>{{ row.case_no }}</td>
+                        <td>{{ row.report_type }}</td>
+                        <td>{{ row.status }}</td>
+                        <td>{{ row.due_date or '-' }}</td>
+                    </tr>
+                {% else %}
+                    <tr><td colspan="5" class="empty">No pending reports.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+
+<section class="split-grid">
+    <article class="panel">
+        <div class="panel-head"><h2>Monthly Statistics</h2></div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Month</th><th>Category</th><th>Type</th><th>Total</th></tr></thead>
+                <tbody>
+                {% for row in monthly %}
+                    <tr><td>{{ row.case_month }}</td><td>{{ row.case_category }}</td><td>{{ row.case_type }}</td><td>{{ row.total_cases }}</td></tr>
+                {% else %}
+                    <tr><td colspan="4" class="empty">No data.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+    <article class="panel">
+        <div class="panel-head"><h2>Operational Status</h2></div>
+        <div class="status-grid">
+            <div>
+                <h3>Lab tests</h3>
+                {% for row in lab %}
+                    <p><span>{{ row.status }}</span><strong>{{ row.total }}</strong></p>
+                {% endfor %}
+            </div>
+            <div>
+                <h3>Death types</h3>
+                {% for row in deaths %}
+                    <p><span>{{ row.death_type }}</span><strong>{{ row.total }}</strong></p>
+                {% endfor %}
+            </div>
+        </div>
+    </article>
+</section>
+{% endblock %}

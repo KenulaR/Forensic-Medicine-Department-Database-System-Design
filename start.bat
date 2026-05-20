@@ -1,0 +1,9 @@
+@echo off
+set FORENSIC_DB_ENGINE=mysql
+set FORENSIC_MYSQL_HOST=127.0.0.1
+set FORENSIC_MYSQL_PORT=3306
+set FORENSIC_MYSQL_USER=forensic_user
+set FORENSIC_MYSQL_PASSWORD=forensic123
+set FORENSIC_MYSQL_DATABASE=forensic_medicine_db
+set SSLKEYLOGFILE=
+python codes\Backend\run_server.py

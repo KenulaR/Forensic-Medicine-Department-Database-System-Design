@@ -1,0 +1,134 @@
+{% extends "layout.html" %}
+{% block title %}{{ case.case_no }} | Forensic DB{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="eyebrow">{{ case.case_category }} Case</p>
+        <h1>{{ case.case_no }}</h1>
+    </div>
+    <div class="head-actions">
+        {% if has_role('admin', 'doctor', 'clerk') %}
+            <a class="button ghost" href="{{ url_for('module_edit', module_key='cases', item_id=case.id) }}">Edit case</a>
+        {% endif %}
+        <a class="button" href="{{ url_for('module_list', module_key='cases') }}">All cases</a>
+    </div>
+</div>
+
+<section class="detail-grid">
+    <article class="panel">
+        <h2>Case Details</h2>
+        <dl class="details">
+            <dt>Patient</dt><dd>{{ case.patient_no }} - {{ case.patient_name }}</dd>
+            <dt>Gender / Age</dt><dd>{{ case.gender }} / {{ case.age or '-' }}</dd>
+            <dt>Type</dt><dd>{{ case.case_type }}</dd>
+            <dt>Status</dt><dd><span class="status">{{ case.status }}</span></dd>
+            <dt>Legal authorisation</dt><dd>{{ case.authorization_type }} {{ case.authorization_ref or '' }}</dd>
+            <dt>Incident</dt><dd>{{ case.incident_date or '-' }} at {{ case.incident_location or '-' }}</dd>
+            <dt>Police station</dt><dd>{{ case.police_station or '-' }}</dd>
+            <dt>Assigned doctor</dt><dd>{{ case.assigned_doctor or '-' }}</dd>
+        </dl>
+    </article>
+    <article class="panel">
+        <h2>Summary</h2>
+        <p class="preline">{{ case.summary or 'No summary recorded.' }}</p>
+        <div class="quick-actions">
+            {% if case.case_category == 'Clinical' and has_role('admin', 'doctor', 'clerk') %}
+                <a class="button small" href="{{ url_for('module_new', module_key='clinical', case_id=case.id) }}">Add MLEF</a>
+            {% endif %}
+            {% if case.case_category == 'Autopsy' and has_role('admin', 'doctor') %}
+                <a class="button small" href="{{ url_for('module_new', module_key='postmortems', case_id=case.id) }}">Add PMR</a>
+            {% endif %}
+            {% if has_role('admin', 'doctor', 'clerk') %}
+                <a class="button small" href="{{ url_for('module_new', module_key='documents', case_id=case.id) }}">Add document</a>
+                <a class="button small" href="{{ url_for('module_new', module_key='reports', case_id=case.id) }}">Add report</a>
+            {% endif %}
+            {% if has_role('admin', 'doctor', 'lab') %}
+                <a class="button small" href="{{ url_for('module_new', module_key='evidence', case_id=case.id) }}">Add evidence</a>
+                <a class="button small" href="{{ url_for('module_new', module_key='lab-tests', case_id=case.id) }}">Add lab test</a>
+            {% endif %}
+        </div>
+    </article>
+</section>
+
+{% if related.clinical %}
+<section class="panel">
+    <div class="panel-head">
+        <h2>Clinical MLEF</h2>
+        {% if has_role('admin', 'doctor', 'clerk') %}
+            <a href="{{ url_for('module_edit', module_key='clinical', item_id=related.clinical.id) }}">Edit</a>
+        {% endif %}
+    </div>
+    <dl class="details columns">
+        <dt>MLEF No</dt><dd>{{ related.clinical.mlef_no }}</dd>
+        <dt>Examined</dt><dd>{{ related.clinical.examined_at or '-' }}</dd>
+        <dt>Police copy</dt><dd>{{ 'Issued' if related.clinical.issued_police_copy else 'Not issued' }}</dd>
+        <dt>MLR status</dt><dd>{{ related.clinical.mlr_status }}</dd>
+        <dt>Next court date</dt><dd>{{ related.clinical.next_court_date or '-' }}</dd>
+        <dt>Photographs</dt><dd>{{ related.clinical.photos_path or '-' }}</dd>
+    </dl>
+    <div class="two-column-text">
+        <div><h3>Findings</h3><p class="preline">{{ related.clinical.findings or '-' }}</p></div>
+        <div><h3>Investigations / Referrals</h3><p class="preline">{{ related.clinical.investigation_findings or '-' }}{% if related.clinical.referral_notes %}&#10;{{ related.clinical.referral_notes }}{% endif %}</p></div>
+    </div>
+</section>
+{% endif %}
+
+{% if related.postmortem %}
+<section class="panel">
+    <div class="panel-head">
+        <h2>Postmortem PMR</h2>
+        {% if has_role('admin', 'doctor') %}
+            <a href="{{ url_for('module_edit', module_key='postmortems', item_id=related.postmortem.id) }}">Edit</a>
+        {% endif %}
+    </div>
+    <dl class="details columns">
+        <dt>PMR No</dt><dd>{{ related.postmortem.pmr_no }}</dd>
+        <dt>Death type</dt><dd>{{ related.postmortem.death_type }}</dd>
+        <dt>Autopsy date</dt><dd>{{ related.postmortem.autopsy_date or '-' }}</dd>
+        <dt>COD status</dt><dd>{{ related.postmortem.cod_status }}</dd>
+        <dt>Histology</dt><dd>{{ related.postmortem.histology_status }}</dd>
+        <dt>Next court date</dt><dd>{{ related.postmortem.next_court_date or '-' }}</dd>
+    </dl>
+    <div class="two-column-text">
+        <div><h3>Pre-autopsy Information</h3><p class="preline">{{ related.postmortem.pre_autopsy_info or '-' }}</p></div>
+        <div><h3>Cause of Death</h3><p class="preline">{{ related.postmortem.cause_of_death or 'Pending' }}</p></div>
+    </div>
+</section>
+{% endif %}
+
+{% set sections = [
+    ('Documents', related.documents, 'documents'),
+    ('Evidence', related.evidence, 'evidence'),
+    ('Lab Tests', related.lab_tests, 'lab-tests'),
+    ('Court Reports', related.reports, 'reports')
+] %}
+{% for title, rows, module_key in sections %}
+<section class="panel">
+    <div class="panel-head">
+        <h2>{{ title }}</h2>
+        <a href="{{ url_for('module_list', module_key=module_key) }}">Open module</a>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <tbody>
+            {% for row in rows %}
+                <tr>
+                    {% if module_key == 'documents' %}
+                        <td>{{ row.document_type }}</td><td>{{ row.reference_no or '-' }}</td><td>{{ row.storage_ref or '-' }}</td>
+                    {% elif module_key == 'evidence' %}
+                        <td><a href="{{ url_for('evidence_detail', evidence_id=row.id) }}">{{ row.evidence_code }}</a></td><td>{{ row.evidence_type }}</td><td>{{ row.lab_status }}</td>
+                    {% elif module_key == 'lab-tests' %}
+                        <td>{{ row.test_code }}</td><td>{{ row.test_type }}</td><td>{{ row.status }}</td>
+                    {% elif module_key == 'reports' %}
+                        <td><a href="{{ url_for('report_print', report_id=row.id) }}">{{ row.report_no }}</a></td><td>{{ row.report_type }}</td><td>{{ row.status }}</td>
+                    {% endif %}
+                </tr>
+            {% else %}
+                <tr><td class="empty">No {{ title|lower }} recorded.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endfor %}
+{% endblock %}

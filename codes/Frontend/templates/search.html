@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Search | Forensic DB{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Search</p>
+        <h1>Record Search</h1>
+    </div>
+</div>
+
+<form class="filter-row large" method="get">
+    <input type="search" name="q" value="{{ q }}" placeholder="Search case, patient, evidence, report" autofocus>
+    <button class="button primary" type="submit">Search</button>
+</form>
+
+<section class="panel">
+    <div class="result-list">
+        {% for result in results %}
+            <a class="result-item" href="{{ result.url }}">
+                <span>{{ result.type }}</span>
+                <strong>{{ result.title }}</strong>
+                <small>{{ result.subtitle }}</small>
+            </a>
+        {% else %}
+            <p class="empty">{% if q %}No matching records found.{% else %}Enter a search term.{% endif %}</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

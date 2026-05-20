@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ evidence.evidence_code }} Label</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="print-body">
+<main class="label-sheet">
+    <section class="evidence-label">
+        <div>
+            <small>Forensic Medicine Department</small>
+            <h1>{{ evidence.evidence_code }}</h1>
+            <p>Case {{ evidence.case_no }}</p>
+            <p>{{ evidence.evidence_type }}</p>
+            <p>{{ evidence.storage_location or 'Storage pending' }}</p>
+        </div>
+        <div class="barcode" aria-label="{{ evidence.barcode_value or evidence.evidence_code }}">
+            {% for width in bars %}
+                <span style="width: {{ width }}px"></span>
+            {% endfor %}
+        </div>
+        <strong>{{ evidence.barcode_value or evidence.evidence_code }}</strong>
+    </section>
+    <div class="print-actions">
+        <button class="button primary" onclick="window.print()">Print</button>
+        <a class="button ghost" href="{{ url_for('evidence_detail', evidence_id=evidence.id) }}">Back</a>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard | Forensic DB{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Today</p>
+        <h1>Department Dashboard</h1>
+    </div>
+    <a class="button primary" href="{{ url_for('module_new', module_key='cases') }}">New case</a>
+</div>
+
+<section class="metric-grid">
+    <article class="metric"><span>{{ stats.patients }}</span><small>Patients</small></article>
+    <article class="metric"><span>{{ stats.cases }}</span><small>Total cases</small></article>
+    <article class="metric"><span>{{ stats.clinical }}</span><small>Clinical</small></article>
+    <article class="metric"><span>{{ stats.autopsy }}</span><small>Autopsy</small></article>
+    <article class="metric warn"><span>{{ stats.pending_reports }}</span><small>Pending reports</small></article>
+    <article class="metric warn"><span>{{ stats.pending_lab }}</span><small>Pending lab tests</small></article>
+</section>
+
+<section class="dashboard-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h2>Notifications</h2>
+        </div>
+        <div class="stack">
+            {% for alert in alerts %}
+                <article class="notice">
+                    <div>
+                        <strong>{{ alert.title }}</strong>
+                        <p>{{ alert.message }}</p>
+                        {% if alert.due_date %}<small>Due {{ alert.due_date }}</small>{% endif %}
+                    </div>
+                    {% if has_role('admin', 'doctor', 'clerk') %}
+                        <form action="{{ url_for('dismiss_notification', notification_id=alert.id) }}" method="post">
+                            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                            <button class="icon-button" title="Dismiss" aria-label="Dismiss">x</button>
+                        </form>
+                    {% endif %}
+                </article>
+            {% else %}
+                <p class="muted">No open notifications.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h2>Case Mix</h2>
+        </div>
+        <div class="bar-list">
+            {% for row in case_mix %}
+                <div class="bar-row">
+                    <span>{{ row.case_category }}</span>
+                    <div class="bar-track"><div class="bar-fill" style="width: {{ row.total * 20 }}%"></div></div>
+                    <strong>{{ row.total }}</strong>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="split-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h2>Recent Cases</h2>
+            <a href="{{ url_for('module_list', module_key='cases') }}">View all</a>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Case</th><th>Patient</th><th>Type</th><th>Status</th></tr></thead>
+                <tbody>
+                {% for row in recent_cases %}
+                    <tr>
+                        <td><a href="{{ url_for('case_detail', case_id=row.id) }}">{{ row.case_no }}</a></td>
+                        <td>{{ row.patient_name }}</td>
+                        <td>{{ row.case_type }}</td>
+                        <td><span class="status">{{ row.status }}</span></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head">
+            <h2>Report Status</h2>
+            <a href="{{ url_for('analytics') }}">Analytics</a>
+        </div>
+        <div class="bar-list">
+            {% for row in report_status %}
+                <div class="bar-row">
+                    <span>{{ row.status }}</span>
+                    <div class="bar-track"><div class="bar-fill alt" style="width: {{ row.total * 20 }}%"></div></div>
+                    <strong>{{ row.total }}</strong>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <h2>Audit Log</h2>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead>
+            <tbody>
+            {% for row in audit %}
+                <tr>
+                    <td>{{ row.created_at }}</td>
+                    <td>{{ row.username or 'system' }}</td>
+                    <td>{{ row.action }}</td>
+                    <td>{{ row.entity }}</td>
+                    <td>{{ row.details }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

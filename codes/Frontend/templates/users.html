@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block title %}Users | Forensic DB{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Security</p>
+        <h1>Users</h1>
+    </div>
+    <a class="button primary" href="{{ url_for('user_form') }}">New user</a>
+</div>
+
+<section class="panel">
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Username</th><th>Role</th><th>Staff</th><th>Active</th><th>Last Login</th><th class="actions-cell">Actions</th></tr></thead>
+            <tbody>
+            {% for row in rows %}
+                <tr>
+                    <td>{{ row["Username"] }}</td>
+                    <td>{{ row["Role"] }}</td>
+                    <td>{{ row["Staff"] }}</td>
+                    <td>{{ row["Active"] }}</td>
+                    <td>{{ row["Last Login"] }}</td>
+                    <td class="actions-cell">
+                        <div class="table-actions">
+                            <a class="button small ghost" href="{{ url_for('user_form', user_id=row.id) }}">Edit</a>
+                            <form action="{{ url_for('user_delete', user_id=row.id) }}" method="post" data-confirm="Delete this user?">
+                                <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                                <button class="button small danger" type="submit">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6" class="empty">No users found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

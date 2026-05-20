@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+{% block title %}{{ evidence.evidence_code }} | Forensic DB{% endblock %}
+{% block content %}
+<div class="page-head">
+    <div>
+        <p class="eyebrow">Evidence</p>
+        <h1>{{ evidence.evidence_code }}</h1>
+    </div>
+    <div class="head-actions">
+        <a class="button" href="{{ url_for('evidence_label', evidence_id=evidence.id) }}">Label</a>
+        {% if can_write %}
+            <a class="button ghost" href="{{ url_for('module_edit', module_key='evidence', item_id=evidence.id) }}">Edit</a>
+        {% endif %}
+    </div>
+</div>
+
+<section class="detail-grid">
+    <article class="panel">
+        <h2>Evidence Details</h2>
+        <dl class="details">
+            <dt>Case</dt><dd><a href="{{ url_for('case_detail', case_id=evidence.case_id) }}">{{ evidence.case_no }}</a></dd>
+            <dt>Patient</dt><dd>{{ evidence.patient_name }}</dd>
+            <dt>Type</dt><dd>{{ evidence.evidence_type }}</dd>
+            <dt>Collected</dt><dd>{{ evidence.collected_at or '-' }}</dd>
+            <dt>Collected by</dt><dd>{{ evidence.collected_by or '-' }}</dd>
+            <dt>Storage</dt><dd>{{ evidence.storage_location or '-' }}</dd>
+            <dt>Lab status</dt><dd><span class="status">{{ evidence.lab_status }}</span></dd>
+            <dt>Barcode value</dt><dd>{{ evidence.barcode_value or '-' }}</dd>
+        </dl>
+    </article>
+    <article class="panel">
+        <h2>Description</h2>
+        <p class="preline">{{ evidence.description or 'No description recorded.' }}</p>
+    </article>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <h2>Chain of Custody</h2>
+    </div>
+    <div class="timeline">
+        {% for row in custody %}
+            <article class="timeline-item">
+                <strong>{{ row.action }}</strong>
+                <span>{{ row.action_at }} / {{ row.location or '-' }}</span>
+                <p>{{ row.from_holder or '-' }} to {{ row.to_holder }}</p>
+                <small>{{ row.handled_by or '-' }}{% if row.notes %} / {{ row.notes }}{% endif %}</small>
+            </article>
+        {% else %}
+            <p class="muted">No custody movements recorded.</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% if can_write %}
+<form class="panel form-grid" action="{{ url_for('add_custody', evidence_id=evidence.id) }}" method="post">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <h2 class="wide">Add Custody Movement</h2>
+    <label>
+        <span>Action *</span>
+        <select name="action" required>
+            {% for choice in action_choices %}<option value="{{ choice }}">{{ choice }}</option>{% endfor %}
+        </select>
+    </label>
+    <label><span>From Holder</span><input name="from_holder"></label>
+    <label><span>To Holder *</span><input name="to_holder" required></label>
+    <label>
+        <span>Handled By</span>
+        <select name="handled_by_staff_id">
+            <option value="">Unassigned</option>
+            {% for option_value, option_label in staff_options %}
+                <option value="{{ option_value }}">{{ option_label }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label><span>Action Time *</span><input name="action_at" type="datetime-local" required></label>
+    <label><span>Location</span><input name="location"></label>
+    <label class="wide"><span>Notes</span><textarea name="notes" rows="3"></textarea></label>
+    <div class="form-actions wide">
+        <button class="button primary" type="submit">Add movement</button>
+    </div>
+</form>
+{% endif %}
+{% endblock %}
