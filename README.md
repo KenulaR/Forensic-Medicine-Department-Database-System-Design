@@ -1,84 +1,84 @@
 # Forensic Medicine Department Database System
 
-This project is now structured as a local full-stack database assignment project using:
+The Forensic Medicine Department Database System is a local full-stack database application designed to modernize record management in a forensic medical department. The system replaces manual, paper-based record keeping with a structured digital platform for managing patients, medico-legal cases, clinical MLEF records, autopsy PMR records, evidence, laboratory investigations, documents, court reports, staff, users, audit logs, and statistical reports.
 
-- MySQL for the main database
-- Flask for the backend
-- HTML, CSS, and JavaScript templates for the frontend
+Built around a normalized MySQL relational database, the project focuses on strong database design, referential integrity, role-based access control, and practical reporting workflows required in a forensic medicine environment. The system supports both clinical forensic work and autopsy/postmortem work, allowing department staff to retrieve case records quickly, track evidence responsibly, monitor pending reports, and generate useful medico-legal outputs.
 
-## Folder Structure
+This repository is organized as a database module mini project with a clear separation between backend source code, frontend templates, SQL database scripts, documentation, and local deployment utilities.
+
+## Repository Structure
 
 ```text
-Forensic/
-  codes/
-    Backend/
-      app.py
-      run_server.py
-      requirements.txt
-    Frontend/
-      templates/
-      static/
-  data/
-    mysql_forensic_database.sql
-    sqlite_schema.sql
-    sqlite_seed.sql
-  docs/
-    DATABASE_DESIGN.md
-  backups/
-  logs/
-  tests/
-  start.ps1
-  start.bat
-  start.sh
+codes/Backend - Flask backend for authentication, CRUD workflows, reports, audit logging, MySQL access, and backup handling
+codes/Frontend - HTML, CSS, JavaScript, and Jinja templates for dashboards, forms, record views, reports, and administration
+data - MySQL database creation script, sample data, and SQLite fallback files for automated testing
+docs - database design documentation and ER/database explanation material
+tests - automated backend tests using SQLite test mode
+backups - local database backup output folder
+logs - local server log output folder
 ```
 
-## Step 1: Start MySQL
+## Current Implementation Snapshot
 
-If your MySQL service is named `MySQL80`, run PowerShell as Administrator and use:
+- MySQL relational schema with primary keys, foreign keys, unique constraints, indexes, views, controlled values, and sample data.
+- User authentication with hashed passwords, session handling, CSRF protection, and role-based access controls.
+- Patient registration, search, update, and case linkage.
+- Clinical forensic case workflow with MLEF records, examination findings, investigations, referrals, police copy status, MLR tracking, and court dates.
+- Autopsy/postmortem workflow with PMR records, inquest/court order details, pre-autopsy information, findings, cause-of-death tracking, histology status, and court dates.
+- Evidence management with evidence codes, storage locations, lab status, printable label/barcode page, and chain-of-custody tracking.
+- Laboratory test management for toxicology, histology, DNA, swabs, X-ray/CT, and other investigations.
+- Document registry for MLEF copies, court orders, inquest orders, PMR scans, COD forms, summons, receipts, photographs, and issued reports.
+- Court report management with printable medico-legal report pages.
+- Dashboard analytics, daily case report, monthly statistics, pending report view, CSV export, notifications, and audit logs.
+- Local backup and restore concept through the admin interface.
+
+## Technology Stack
+
+| Layer | Technology |
+| --- | --- |
+| Database | MySQL 8+ |
+| Backend | Python Flask |
+| Database Driver | PyMySQL |
+| Frontend | HTML, CSS, JavaScript, Jinja templates |
+| Testing | Pytest, SQLite fallback mode |
+
+## Getting Started
+
+### 1. Start MySQL
+
+If the MySQL service is named `MySQL80`, run PowerShell as Administrator:
 
 ```powershell
 net start MySQL80
 ```
 
-If it is already running, you can skip this step.
+### 2. Create the Database
 
-## Step 2: Create the Database in MySQL
-
-Open MySQL Workbench or MySQL CLI as a user with permission to create databases and users.
-
-Copy-paste and run the full script:
+Open MySQL Workbench or the MySQL CLI and run the full script:
 
 ```text
-X:\Forensic\data\mysql_forensic_database.sql
+data/mysql_forensic_database.sql
 ```
 
-That script creates:
+The script creates:
 
 - Database: `forensic_medicine_db`
-- MySQL app user: `forensic_user`
+- Application user: `forensic_user`
 - Password: `forensic123`
-- All tables, relationships, indexes, views, and sample records
+- Tables, relationships, indexes, views, and sample records
 
-## Step 3: Install Backend Requirements
+### 3. Install Backend Requirements
 
 ```powershell
 cd X:\Forensic
 python -m pip install -r codes\Backend\requirements.txt
 ```
 
-## Step 4: Start the Backend and Frontend
-
-The frontend is served by Flask from `codes/Frontend`, so you only need one app server:
+### 4. Start the Local Application
 
 ```powershell
 cd X:\Forensic
 .\start.ps1
-```
-
-Or:
-
-```powershell
-python codes\Backend\run_server.py
 ```
 
 Then open:
@@ -87,29 +87,35 @@ Then open:
 http://127.0.0.1:5000/login
 ```
 
-## Demo Logins
+## Demo Accounts
 
 | Role | Username | Password |
 | --- | --- | --- |
 | Administrator | `admin` | `admin123` |
 | Doctor / JMO | `doctor` | `doctor123` |
-| Clerical officer | `clerk` | `clerk123` |
-| Laboratory staff | `lab` | `lab123` |
-| Research view | `researcher` | `research123` |
+| Clerical Officer | `clerk` | `clerk123` |
+| Laboratory Staff | `lab` | `lab123` |
+| Research View | `researcher` | `research123` |
 
-## What to Demonstrate
+## Database Design Focus
 
-- MySQL relational schema with primary keys, foreign keys, indexes, views, and constraints.
-- Patient registration and search.
-- Clinical MLEF case records.
-- Autopsy PMR and cause-of-death tracking.
-- Evidence tracking and chain of custody.
-- Lab investigations.
-- Court reports and printable medico-legal reports.
-- Role-based access control.
-- Audit logs.
-- Daily/monthly SQL reports and CSV exports.
-- MySQL backup from the admin backup page.
+The database is the central part of this project. The design separates patient records, forensic cases, clinical examinations, postmortems, evidence, custody movements, lab tests, documents, reports, staff, users, notifications, and audit logs into normalized relational tables.
+
+Important database features include:
+
+- One-to-many and one-to-one relationships modeled with foreign keys.
+- Separate clinical and autopsy tables to avoid mixing unrelated attributes.
+- Chain-of-custody table to preserve multiple evidence movement records.
+- SQL views for case directories, pending reports, daily reports, and monthly statistics.
+- Indexes for commonly searched fields such as case, patient, MLEF, PMR, evidence, report, and audit records.
+- Controlled values using MySQL `ENUM` columns.
+
+Full design guidance is available in:
+
+```text
+DESIGN.md
+docs/DATABASE_DESIGN.md
+```
 
 ## Local Runtime Flow
 
@@ -117,10 +123,21 @@ http://127.0.0.1:5000/login
 MySQL Server
   -> forensic_medicine_db
   -> Flask backend in codes/Backend
-  -> Frontend templates/static files in codes/Frontend
+  -> Frontend templates and static files in codes/Frontend
   -> Web browser at http://127.0.0.1:5000
 ```
 
-## SQLite Files
+## Team
 
-`data/sqlite_schema.sql` and `data/sqlite_seed.sql` are kept only for automated tests and fallback development. The assignment/demo database is MySQL.
+| Registration No. | Name |
+| --- | --- |
+| E/23/299 | R.D.K.D. Ranasinghe |
+| E/23/084 | D.R.C.V. Dissanayake |
+| E/23/292 | K.S. Rambukkanage |
+| E/23/302 | T.G.D. Randeep |
+
+## Links
+
+- Project Repository: [Forensic Medicine Department Database System](https://github.com/KenulaR/Forensic-Medicine-Department-Database-System-Design)
+- Department of Computer Engineering: https://ce.pdn.ac.lk/
+- University of Peradeniya: https://www.pdn.ac.lk/
